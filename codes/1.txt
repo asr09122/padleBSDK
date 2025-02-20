@@ -1,32 +1,37 @@
-clc 
-clear all
+c1 = @(x1,x2,x3,x4) x1 + x2 + x3 +0*x4 -6;
+c2 = @(x1,x2,x3,x4) 2*x1 - x2 +0*x3 -x4  -9;
 
-A=[1 0 0 1 0 0 0;0 1 0 0 1 0 0; -1 1 0 0 0 1 0; -1 0 2 0 0 0 1];
-B=[4;4;6;4];
-C=[-1 2 -1 0 0 0 0];
-n=size(A,2);
-m=size(A,1);
+C = [3 -5 0 0];
+A = [1 1 1 0; 2 -1 0 -1];
+B = [6;9];
+z = @(x) C*x;
+m = size(A,1);
+n = size(A,2);
 
-if n>m
-    ncm = nchoosek(n, m);
-    p = nchoosek(1:n, m);
-    sol=[];
-    for i=1:ncm
-        y = zeros(n,1);
-        A1 = A(:,p(i,:));
-        if det(A1)~=0
-            X = A1\B;
-            if all(X>=0)
-                y(p(i,:)) = X;
-                sol = [sol y];
-            end
-        end
+% phase 2
+bs = [];
+bfs = [];
+ncm = nchoosek(n,m);
+pair = nchoosek(1:n,m);
+
+for i=1:ncm
+    y = zeros(n,1);
+    basicvar_index = pair(i,:);
+    X = inv(A(:,basicvar_index))*B;
+    y(basicvar_index) = X;
+    bs = [bs y];
+    if(X >= 0)
+   bfs = [bfs y];
     end
-else
-    error('no of avriables are less than number of constraints')
 end
+bs
+bfs
 
-z = C*sol;
-[obj,index] = max(z);
-BFS = sol(:,index);
-optimal_value = [BFS' obj]
+% finding optimal sol
+opt = [];
+for i=1:size(bfs,2)
+    cost = z(bfs(:,i));
+    opt = [opt cost];
+end
+[opt_value,index] = min(opt)
+opt_sol = bfs(:,index)
